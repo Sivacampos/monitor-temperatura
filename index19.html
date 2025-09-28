@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Monitoramento de Geladeiras</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #5287bc;
+            --secondary: #000e40;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #LogoDasa{
+            margin-left: 1%;
+        }
+        
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 15px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1a252f;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-light {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        
+        .btn-light:hover {
+            background-color: #dde4e6;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        
+        .error {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .success {
+            color: var(--success);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .fridge-card {
+            border-left: 5px solid var(--secondary);
+            transition: transform 0.3s ease;
+        }
+        
+        .fridge-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .qr-code {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .qr-code canvas {
+            max-width: 150px;
+            height: auto;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .actions .btn {
+            flex: 1;
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .search-box button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .temperature-form {
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+        
+        .temperature-alert {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+            color: #856404;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .info-item strong {
+            color: var(--primary);
+        }
+        
+        .tab-container {
+            margin-top: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--secondary);
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+        
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .user-management {
+            margin-top: 30px;
+        }
+        
+        .user-table, .temperature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .user-table th, .user-table td, .temperature-table th, .temperature-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .user-table th, .temperature-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .user-table tr:hover, .temperature-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .access-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .access-admin {
+            background-color: #ffeaa7;
+            color: #856404;
+        }
+        
+        .access-user {
+            background-color: #b8e6bf;
+            color: #155724;
+        }
+        
+        .login-links {
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .login-links a {
+            color: var(--secondary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .login-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .password-reset-info {
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--secondary);
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .edit-form {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .temperature-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status-normal {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-alert {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .calibration-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .edit-justification {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--warning);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        #footer{
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .profile-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                border-bottom: 1px solid #ddd;
+                border-left: 3px solid transparent;
+            }
+            
+            .tab.active {
+                border-left: 3px solid var(--secondary);
+                border-bottom: 1px solid #ddd;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .header-info {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .user-table, .temperature-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div id="login-screen">
+        <div class="container login-container">
+            <div class="card login-card">
+                <img id="LogoDasa" src="LogoDasa.png" width="50%" height="50%" alt="">
+                <h2>Sistema de Monitoramento de Temperaturas</h2>
+                <p>Faça login para acessar o sistema</p>                
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Usuário</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+                </form>
+                
+                <div class="login-links">
+                    <a id="forgot-password-link">Esqueci minha senha</a>
+                </div>
+                
+                <div id="login-error" class="error hidden" style="margin-top: 15px;">
+                    Usuário ou senha incorretos.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tela de Recuperação de Senha -->
+    <div id="password-reset-screen" class="hidden">
+        <div class="container login-container">
+            <div class="card login-card">
+                <h2>Recuperar Senha</h2>
+                <p>Informe seu e-mail corporativo para receber uma senha provisória</p>
+                
+                <form id="password-reset-form">
+                    <div class="form-group">
+                        <label for="reset-email">E-mail Corporativo</label>
+                        <input type="email" id="reset-email" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Enviar Senha Provisória</button>
+                </form>
+                
+                <div class="login-links">
+                    <a id="back-to-login">Voltar para o login</a>
+                </div>
+                
+                <div id="reset-success" class="success hidden" style="margin-top: 15px;">
+                    Senha provisória enviada para o e-mail informado.
+                </div>
+                
+                <div id="reset-error" class="error hidden" style="margin-top: 15px;">
+                    E-mail não encontrado no sistema.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tela de Redefinição de Senha -->
+    <div id="change-password-screen" class="hidden">
+        <div class="container login-container">
+            <div class="card login-card">
+                <h2>Alterar Senha</h2>
+                <p>Informe a senha provisória e defina sua nova senha</p>
+                
+                <form id="change-password-form">
+                    <div class="form-group">
+                        <label for="temp-password">Senha Provisória</label>
+                        <input type="password" id="temp-password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-password">Nova Senha</label>
+                        <input type="password" id="new-password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm-password">Confirmar Nova Senha</label>
+                        <input type="password" id="confirm-password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Alterar Senha</button>
+                </form>
+                
+                <div class="login-links">
+                    <a id="back-to-login-2">Voltar para o login</a>
+                </div>
+                
+                <div id="change-success" class="success hidden" style="margin-top: 15px;">
+                    Senha alterada com sucesso. Faça login com sua nova senha.
+                </div>
+                
+                <div id="change-error" class="error hidden" style="margin-top: 15px;">
+                    Senha provisória incorreta ou senhas não coincidem.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Principal -->
+    <div id="main-system" class="hidden">
+        <header>
+            <img id="LogoDasa" src="LogoDasa.png" alt="" width="11%" height="11%">
+            <h1>Sistema de Monitoramento de Temperaturas</h1>
+            <div class="header-info">
+                <div class="user-info" id="user-info">
+                    <!-- Informações do usuário logado -->
+                </div>
+                <button class="btn btn-light" id="logout-btn">Sair</button>
+            </div>
+        </header>
+        
+        <div class="container">
+            <!-- Tela de Cadastro e Listagem -->
+            <div id="main-screen">
+                <div class="card" id="admin-panel">
+                    <h2>Painel do Administrador</h2>
+                    <div class="actions">
+                        <button class="btn btn-primary" id="show-user-management">Gerenciar Usuários</button>
+                        <button class="btn btn-secondary" id="show-fridge-management">Gerenciar Geladeiras</button>
+                    </div>
+                </div>
+                
+                <div id="user-management" class="user-management hidden">
+                    <div class="card">
+                        <h2>Gerenciamento de Usuários</h2>
+                        <button class="btn btn-success" id="add-user-btn">Adicionar Usuário</button>
+                        
+                        <div id="user-form" class="hidden" style="margin-top: 20px;">
+                            <h3>Cadastrar Novo Usuário</h3>
+                            <form id="new-user-form">
+                                <div class="form-group">
+                                    <label for="new-username">Nome de Usuário</label>
+                                    <input type="text" id="new-username" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="new-email">E-mail Corporativo</label>
+                                    <input type="email" id="new-email" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="user-level">Nível de Acesso</label>
+                                    <select id="user-level" required>
+                                        <option value="1">Administrador</option>
+                                        <option value="2">Usuário</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="password-reset-info">
+                                    <p><strong>Informação:</strong> A senha inicial será gerada automaticamente e o usuário receberá instruções para redefini-la no primeiro acesso.</p>
+                                </div>
+                                
+                                <div class="actions">
+                                    <button type="submit" class="btn btn-success">Cadastrar Usuário</button>
+                                    <button type="button" class="btn btn-light" id="cancel-user-btn">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuário</th>
+                                    <th>E-mail</th>
+                                    <th>Nível de Acesso</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-list">
+                                <!-- Lista de usuários será preenchida aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="fridge-management">
+                    <div class="card" id="fridge-form-card">
+                        <h2>Cadastrar Nova Geladeira</h2>
+                        <form id="fridge-form">
+                            <div class="form-group">
+                                <label for="local">Local do Equipamento</label>
+                                <input type="text" id="local" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="tipo">Tipo de Equipamento</label>
+                                <select id="tipo" required>
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="Geladeira">Geladeira</option>
+                                    <option value="Freezer">Freezer</option>
+                                    <option value="Câmara Frigorífica">Câmara Frigorífica</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="marca">Marca do Equipamento</label>
+                                <input type="text" id="marca" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="codigo-dasa">Código Dasa</label>
+                                <input type="text" id="codigo-dasa" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="codigo-termometro">Código do Termômetro</label>
+                                <input type="text" id="codigo-termometro" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="data-calibracao">Data de Última Calibração</label>
+                                <input type="date" id="data-calibracao" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Cadastrar Geladeira</button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>Geladeiras Cadastradas</h2>
+                        
+                        <div class="search-box">
+                            <input type="text" id="search-input" placeholder="Pesquisar por Código Dasa...">
+                            <button class="btn btn-secondary" id="search-btn">Pesquisar</button>
+                        </div>
+                        
+                        <div class="grid" id="fridge-list">
+                            <!-- As geladeiras cadastradas serão inseridas aqui via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tela de Perfil da Geladeira -->
+            <div id="profile-screen" class="hidden">
+                <div class="card">
+                    <button class="btn btn-primary" id="back-btn">← Voltar para Lista</button>
+                    <h2 id="profile-title">Perfil da Geladeira</h2>
+                    
+                    <div class="profile-info" id="profile-info">
+                        <!-- Informações da geladeira serão inseridas aqui -->
+                    </div>
+                    
+                    <div class="tab-container">
+                        <div class="tabs">
+                            <div class="tab active" data-tab="temperature">Registro de Temperatura</div>
+                            <div class="tab" data-tab="history">Histórico</div>
+                            <div class="tab" data-tab="chart">Gráfico</div>
+                            <div class="tab" data-tab="qrcode">QR Code</div>
+                        </div>
+                        
+                        <div class="tab-content active" id="temperature-tab">
+                            <div class="temperature-form">
+                                <h3>Registro de Temperatura</h3>
+                                
+                                <div class="form-group">
+                                    <label for="temp-min">Temperatura Mínima (°C)</label>
+                                    <input type="number" id="temp-min" min="-40" max="30" step="0.1" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="temp-atual">Temperatura Atual (°C)</label>
+                                    <input type="number" id="temp-atual" min="-40" max="30" step="0.1" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="temp-max">Temperatura Máxima (°C)</label>
+                                    <input type="number" id="temp-max" min="-40" max="30" step="0.1" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="plano-acao">Plano de Ação (caso temperatura inadequada)</label>
+                                    <textarea id="plano-acao" rows="3"></textarea>
+                                </div>
+                                
+                                <div id="temperature-error" class="error hidden">
+                                    <!-- Mensagens de erro serão inseridas aqui -->
+                                </div>
+                                
+                                <div id="temperature-status" class="temperature-status hidden">
+                                    <!-- Status da temperatura será inserido aqui -->
+                                </div>
+                                
+                                <button class="btn btn-success" id="save-temperature">Registrar Temperatura</button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="history-tab">
+                            <h3>Histórico de Temperaturas</h3>
+                            <div id="temperature-history">
+                                <table class="temperature-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Data/Hora</th>
+                                            <th>Temp. Mínima</th>
+                                            <th>Temp. Atual</th>
+                                            <th>Temp. Máxima</th>
+                                            <th>Status</th>
+                                            <th>Plano de Ação</th>
+                                            <th>Usuário</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="temperature-table">
+                                        <!-- Os registros de temperatura serão inseridos aqui -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="chart-tab">
+                            <h3>Gráfico de Temperaturas</h3>
+                            <div class="chart-container">
+                                <canvas id="temperature-chart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="qrcode-tab">
+                            <h3>QR Code de Identificação</h3>
+                            <div class="qr-code" id="profile-qr-code">
+                                <!-- QR Code será gerado aqui -->
+                            </div>
+                            <p style="text-align: center; margin-top: 10px;">Este QR Code fornece acesso direto ao perfil desta geladeira.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <h3 id="footer" >NTO BAHIA 2025</h3>
+    </footer>
+
+    <script>
+        // Armazenamento local para usuários e geladeiras
+        let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [
+            { 
+                username: 'admin', 
+                password: 'admin123', 
+                email: 'admin@empresa.com',
+                nivel: 1,
+                primeiroAcesso: false
+            }
+        ];
+        let geladeiras = JSON.parse(localStorage.getItem('geladeiras')) || [];
+        let usuarioLogado = null;
+        let geladeiraAtual = null;
+        let temperatureChart = null;
+        let usuarioParaReset = null;
+
+        // Elementos da interface
+        const loginScreen = document.getElementById('login-screen');
+        const passwordResetScreen = document.getElementById('password-reset-screen');
+        const changePasswordScreen = document.getElementById('change-password-screen');
+        const mainSystem = document.getElementById('main-system');
+        const loginForm = document.getElementById('login-form');
+        const passwordResetForm = document.getElementById('password-reset-form');
+        const changePasswordForm = document.getElementById('change-password-form');
+        const loginError = document.getElementById('login-error');
+        const resetSuccess = document.getElementById('reset-success');
+        const resetError = document.getElementById('reset-error');
+        const changeSuccess = document.getElementById('change-success');
+        const changeError = document.getElementById('change-error');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const backToLogin = document.getElementById('back-to-login');
+        const backToLogin2 = document.getElementById('back-to-login-2');
+        const userInfo = document.getElementById('user-info');
+        const logoutBtn = document.getElementById('logout-btn');
+        const adminPanel = document.getElementById('admin-panel');
+        const userManagement = document.getElementById('user-management');
+        const fridgeManagement = document.getElementById('fridge-management');
+        const showUserManagementBtn = document.getElementById('show-user-management');
+        const showFridgeManagementBtn = document.getElementById('show-fridge-management');
+        const addUserBtn = document.getElementById('add-user-btn');
+        const userForm = document.getElementById('user-form');
+        const newUserForm = document.getElementById('new-user-form');
+        const cancelUserBtn = document.getElementById('cancel-user-btn');
+        const userList = document.getElementById('user-list');
+        const fridgeForm = document.getElementById('fridge-form');
+        const fridgeList = document.getElementById('fridge-list');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const mainScreen = document.getElementById('main-screen');
+        const profileScreen = document.getElementById('profile-screen');
+        const backBtn = document.getElementById('back-btn');
+        const profileTitle = document.getElementById('profile-title');
+        const profileInfo = document.getElementById('profile-info');
+        const saveTemperatureBtn = document.getElementById('save-temperature');
+        const tempMinInput = document.getElementById('temp-min');
+        const tempAtualInput = document.getElementById('temp-atual');
+        const tempMaxInput = document.getElementById('temp-max');
+        const planoAcaoInput = document.getElementById('plano-acao');
+        const temperatureError = document.getElementById('temperature-error');
+        const temperatureStatus = document.getElementById('temperature-status');
+        const temperatureTable = document.getElementById('temperature-table');
+        const temperatureChartCanvas = document.getElementById('temperature-chart');
+        const profileQrCode = document.getElementById('profile-qr-code');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se há um usuário logado
+            const loggedUser = localStorage.getItem('usuarioLogado');
+            if (loggedUser) {
+                usuarioLogado = JSON.parse(loggedUser);
+                showMainSystem();
+            }
+            
+            // Event Listeners
+            loginForm.addEventListener('submit', handleLogin);
+            passwordResetForm.addEventListener('submit', handlePasswordReset);
+            changePasswordForm.addEventListener('submit', handleChangePassword);
+            forgotPasswordLink.addEventListener('click', showPasswordReset);
+            backToLogin.addEventListener('click', showLogin);
+            backToLogin2.addEventListener('click', showLogin);
+            logoutBtn.addEventListener('click', handleLogout);
+            showUserManagementBtn.addEventListener('click', showUserManagement);
+            showFridgeManagementBtn.addEventListener('click', showFridgeManagement);
+            addUserBtn.addEventListener('click', showAddUserForm);
+            newUserForm.addEventListener('submit', handleAddUser);
+            cancelUserBtn.addEventListener('click', hideAddUserForm);
+            fridgeForm.addEventListener('submit', handleFridgeSubmit);
+            searchBtn.addEventListener('click', handleSearch);
+            backBtn.addEventListener('click', goBackToMain);
+            saveTemperatureBtn.addEventListener('click', handleTemperatureSubmit);
+            
+            // Validação em tempo real da temperatura
+            tempMinInput.addEventListener('input', validateTemperature);
+            tempAtualInput.addEventListener('input', validateTemperature);
+            tempMaxInput.addEventListener('input', validateTemperature);
+            
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+            
+            // Verificar se estamos na tela de perfil por meio de parâmetros de URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const fridgeId = urlParams.get('id');
+            
+            if (fridgeId && usuarioLogado) {
+                openFridgeProfile(fridgeId);
+            }
+        });
+
+        // Mostrar tela de login
+        function showLogin() {
+            loginScreen.classList.remove('hidden');
+            passwordResetScreen.classList.add('hidden');
+            changePasswordScreen.classList.add('hidden');
+            loginError.classList.add('hidden');
+            resetSuccess.classList.add('hidden');
+            resetError.classList.add('hidden');
+            changeSuccess.classList.add('hidden');
+            changeError.classList.add('hidden');
+        }
+
+        // Mostrar tela de recuperação de senha
+        function showPasswordReset() {
+            loginScreen.classList.add('hidden');
+            passwordResetScreen.classList.remove('hidden');
+            changePasswordScreen.classList.add('hidden');
+            resetSuccess.classList.add('hidden');
+            resetError.classList.add('hidden');
+        }
+
+        // Mostrar tela de alteração de senha
+        function showChangePassword() {
+            loginScreen.classList.add('hidden');
+            passwordResetScreen.classList.add('hidden');
+            changePasswordScreen.classList.remove('hidden');
+            changeSuccess.classList.add('hidden');
+            changeError.classList.add('hidden');
+        }
+
+        // Manipular login
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Verificar credenciais
+            const usuario = usuarios.find(u => u.username === username && u.password === password);
+            
+            if (usuario) {
+                // Verificar se é primeiro acesso (senha provisória)
+                if (usuario.primeiroAcesso) {
+                    usuarioParaReset = usuario;
+                    showChangePassword();
+                    document.getElementById('temp-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-password').value = '';
+                    return;
+                }
+                
+                usuarioLogado = usuario;
+                localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+                showMainSystem();
+            } else {
+                loginError.classList.remove('hidden');
+            }
+        }
+
+        // Manipular recuperação de senha
+        function handlePasswordReset(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('reset-email').value;
+            
+            // Verificar se o e-mail existe
+            const usuario = usuarios.find(u => u.email === email);
+            
+            if (usuario) {
+                // Gerar senha provisória (simulação)
+                const senhaProvisoria = Math.random().toString(36).slice(-8);
+                usuario.senhaProvisoria = senhaProvisoria;
+                usuario.primeiroAcesso = true;
+                
+                // Atualizar no localStorage
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                
+                // Simular envio de e-mail
+                console.log(`Senha provisória para ${usuario.username}: ${senhaProvisoria}`);
+                alert(`Senha provisória enviada para ${email}: ${senhaProvisoria}`);
+                
+                resetSuccess.classList.remove('hidden');
+                resetError.classList.add('hidden');
+                
+                // Limpar formulário
+                document.getElementById('reset-email').value = '';
+            } else {
+                resetError.classList.remove('hidden');
+                resetSuccess.classList.add('hidden');
+            }
+        }
+
+        // Manipular alteração de senha
+        function handleChangePassword(e) {
+            e.preventDefault();
+            
+            const tempPassword = document.getElementById('temp-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // Verificar se a senha provisória está correta
+            if (usuarioParaReset && usuarioParaReset.senhaProvisoria === tempPassword) {
+                // Verificar se as senhas coincidem
+                if (newPassword === confirmPassword) {
+                    // Atualizar senha
+                    usuarioParaReset.password = newPassword;
+                    usuarioParaReset.primeiroAcesso = false;
+                    delete usuarioParaReset.senhaProvisoria;
+                    
+                    // Atualizar no localStorage
+                    const index = usuarios.findIndex(u => u.username === usuarioParaReset.username);
+                    if (index !== -1) {
+                        usuarios[index] = usuarioParaReset;
+                        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                    }
+                    
+                    changeSuccess.classList.remove('hidden');
+                    changeError.classList.add('hidden');
+                    
+                    // Limpar formulário
+                    document.getElementById('temp-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-password').value = '';
+                    
+                    // Redirecionar para login após 2 segundos
+                    setTimeout(() => {
+                        showLogin();
+                    }, 2000);
+                } else {
+                    changeError.textContent = 'As senhas não coincidem.';
+                    changeError.classList.remove('hidden');
+                    changeSuccess.classList.add('hidden');
+                }
+            } else {
+                changeError.textContent = 'Senha provisória incorreta.';
+                changeError.classList.remove('hidden');
+                changeSuccess.classList.add('hidden');
+            }
+        }
+
+        // Manipular logout
+        function handleLogout() {
+            usuarioLogado = null;
+            localStorage.removeItem('usuarioLogado');
+            showLogin();
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            loginError.classList.add('hidden');
+        }
+
+        // Mostrar sistema principal
+        function showMainSystem() {
+            loginScreen.classList.add('hidden');
+            passwordResetScreen.classList.add('hidden');
+            changePasswordScreen.classList.add('hidden');
+            mainSystem.classList.remove('hidden');
+            
+            // Atualizar informações do usuário
+            userInfo.innerHTML = `
+                <span>${usuarioLogado.username}</span>
+                <span class="access-badge ${usuarioLogado.nivel === 1 ? 'access-admin' : 'access-user'}">
+                    ${usuarioLogado.nivel === 1 ? 'Administrador' : 'Usuário'}
+                </span>
+            `;
+            
+            // Mostrar/ocultar painel de administração
+            if (usuarioLogado.nivel === 1) {
+                adminPanel.classList.remove('hidden');
+            } else {
+                adminPanel.classList.add('hidden');
+                showFridgeManagement();
+            }
+            
+            // Carregar dados
+            renderUserList();
+            renderFridgeList();
+        }
+
+        // Mostrar gerenciamento de usuários
+        function showUserManagement() {
+            userManagement.classList.remove('hidden');
+            fridgeManagement.classList.add('hidden');
+        }
+
+        // Mostrar gerenciamento de geladeiras
+        function showFridgeManagement() {
+            userManagement.classList.add('hidden');
+            fridgeManagement.classList.remove('hidden');
+        }
+
+        // Mostrar formulário de adição de usuário
+        function showAddUserForm() {
+            userForm.classList.remove('hidden');
+        }
+
+        // Ocultar formulário de adição de usuário
+        function hideAddUserForm() {
+            userForm.classList.add('hidden');
+            newUserForm.reset();
+        }
+
+        // Manipular adição de usuário
+        function handleAddUser(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('new-username').value;
+            const email = document.getElementById('new-email').value;
+            const nivel = parseInt(document.getElementById('user-level').value);
+            
+            // Verificar se o usuário já existe
+            if (usuarios.some(u => u.username === username)) {
+                alert('Já existe um usuário com este nome.');
+                return;
+            }
+            
+            // Verificar se o e-mail já existe
+            if (usuarios.some(u => u.email === email)) {
+                alert('Já existe um usuário com este e-mail.');
+                return;
+            }
+            
+            // Gerar senha provisória
+            const senhaProvisoria = Math.random().toString(36).slice(-8);
+            
+            // Adicionar usuário
+            usuarios.push({ 
+                username, 
+                email,
+                password: senhaProvisoria, 
+                nivel,
+                primeiroAcesso: true,
+                senhaProvisoria: senhaProvisoria
+            });
+            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            
+            // Simular envio de e-mail com senha provisória
+            console.log(`Novo usuário: ${username}, Senha provisória: ${senhaProvisoria}`);
+            alert(`Usuário ${username} cadastrado com sucesso! Senha provisória: ${senhaProvisoria}`);
+            
+            // Atualizar lista
+            renderUserList();
+            
+            // Limpar formulário
+            hideAddUserForm();
+        }
+
+        // Renderizar lista de usuários
+        function renderUserList() {
+            userList.innerHTML = '';
+            
+            usuarios.forEach((usuario, index) => {
+                // Não permitir que usuários excluam a si mesmos
+                const isCurrentUser = usuario.username === usuarioLogado.username;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${usuario.username}</td>
+                    <td>${usuario.email}</td>
+                    <td>
+                        <span class="access-badge ${usuario.nivel === 1 ? 'access-admin' : 'access-user'}">
+                            ${usuario.nivel === 1 ? 'Administrador' : 'Usuário'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning btn-sm reset-user-btn" data-index="${index}">Resetar Senha</button>
+                        ${!isCurrentUser ? `<button class="btn btn-danger btn-sm delete-user-btn" data-index="${index}">Excluir</button>` : ''}
+                    </td>
+                `;
+                
+                userList.appendChild(row);
+            });
+            
+            // Adicionar event listeners aos botões
+            document.querySelectorAll('.reset-user-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    resetUserPassword(index);
+                });
+            });
+            
+            document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    deleteUser(index);
+                });
+            });
+        }
+
+        // Resetar senha do usuário
+        function resetUserPassword(index) {
+            if (confirm('Tem certeza que deseja resetar a senha deste usuário?')) {
+                const usuario = usuarios[index];
+                
+                // Gerar nova senha provisória
+                const senhaProvisoria = Math.random().toString(36).slice(-8);
+                usuario.password = senhaProvisoria;
+                usuario.primeiroAcesso = true;
+                usuario.senhaProvisoria = senhaProvisoria;
+                
+                // Atualizar no localStorage
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                
+                // Simular envio de e-mail
+                console.log(`Nova senha provisória para ${usuario.username}: ${senhaProvisoria}`);
+                alert(`Senha resetada para ${usuario.username}. Nova senha provisória: ${senhaProvisoria}`);
+            }
+        }
+
+        // Excluir usuário
+        function deleteUser(index) {
+            if (confirm('Tem certeza que deseja excluir este usuário?')) {
+                usuarios.splice(index, 1);
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                renderUserList();
+                alert('Usuário excluído com sucesso.');
+            }
+        }
+
+        // Função para alternar entre abas
+        function switchTab(tabId) {
+            // Remover classe active de todas as tabs e conteúdos
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Adicionar classe active à tab selecionada
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+            
+            // Se for a aba do gráfico, atualizar o gráfico
+            if (tabId === 'chart') {
+                updateTemperatureChart();
+            }
+            
+            // Se for a aba do QR Code, gerar o QR Code
+            if (tabId === 'qrcode') {
+                generateProfileQrCode();
+            }
+        }
+
+        // Função para gerar ID único
+        function generateId() {
+            return 'fridge_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Função para gerar QR Code
+        function generateQRCode(text, container) {
+            // Limpar container
+            container.innerHTML = '';
+            
+            // Gerar QR Code
+            const typeNumber = 0;
+            const errorCorrectionLevel = 'L';
+            const qr = qrcode(typeNumber, errorCorrectionLevel);
+            qr.addData(text);
+            qr.make();
+            
+            // Criar elemento canvas para o QR Code
+            const qrCanvas = document.createElement('canvas');
+            qrCanvas.width = 200;
+            qrCanvas.height = 200;
+            
+            const ctx = qrCanvas.getContext('2d');
+            const moduleCount = qr.getModuleCount();
+            const cellSize = qrCanvas.width / moduleCount;
+            
+            // Preencher fundo branco
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
+            
+            // Desenhar módulos do QR Code
+            ctx.fillStyle = '#000000';
+            for (let row = 0; row < moduleCount; row++) {
+                for (let col = 0; col < moduleCount; col++) {
+                    if (qr.isDark(row, col)) {
+                        ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+            
+            container.appendChild(qrCanvas);
+        }
+
+        // Gerar QR Code para o perfil
+        function generateProfileQrCode() {
+            if (!geladeiraAtual) return;
+            
+            const fridgeUrl = `${window.location.origin}${window.location.pathname}?id=${geladeiraAtual.id}`;
+            generateQRCode(fridgeUrl, profileQrCode);
+        }
+
+        // Manipular envio do formulário de geladeira
+        function handleFridgeSubmit(e) {
+            e.preventDefault();
+            
+            // Verificar permissão (apenas administradores podem cadastrar geladeiras)
+            if (usuarioLogado.nivel !== 1) {
+                alert('Apenas administradores podem cadastrar geladeiras.');
+                return;
+            }
+            
+            const local = document.getElementById('local').value;
+            const tipo = document.getElementById('tipo').value;
+            const marca = document.getElementById('marca').value;
+            const codigoDasa = document.getElementById('codigo-dasa').value;
+            const codigoTermometro = document.getElementById('codigo-termometro').value;
+            const dataCalibracao = document.getElementById('data-calibracao').value;
+            
+            // Verificar se o código Dasa já existe
+            if (geladeiras.some(g => g.codigoDasa === codigoDasa)) {
+                alert('Já existe uma geladeira com este Código Dasa.');
+                return;
+            }
+            
+            // Criar nova geladeira
+            const novaGeladeira = {
+                id: generateId(),
+                local,
+                tipo,
+                marca,
+                codigoDasa,
+                codigoTermometro,
+                dataCalibracao,
+                temperaturas: [],
+                dataCadastro: new Date().toISOString()
+            };
+            
+            // Adicionar à lista
+            geladeiras.push(novaGeladeira);
+            
+            // Salvar no localStorage
+            localStorage.setItem('geladeiras', JSON.stringify(geladeiras));
+            
+            // Limpar formulário
+            fridgeForm.reset();
+            
+            // Atualizar lista
+            renderFridgeList();
+            
+            alert('Geladeira cadastrada com sucesso!');
+        }
+
+        // Renderizar lista de geladeiras
+        function renderFridgeList(filteredList = null) {
+            const listToRender = filteredList || geladeiras;
+            
+            fridgeList.innerHTML = '';
+            
+            if (listToRender.length === 0) {
+                fridgeList.innerHTML = '<p>Nenhuma geladeira cadastrada.</p>';
+                return;
+            }
+            
+            listToRender.forEach(geladeira => {
+                const fridgeCard = document.createElement('div');
+                fridgeCard.className = 'card fridge-card';
+                
+                // Gerar URL única para a geladeira
+                const fridgeUrl = `${window.location.origin}${window.location.pathname}?id=${geladeira.id}`;
+                
+                // Verificar se a calibração está vencida (mais de 1 ano)
+                const dataCalibracao = new Date(geladeira.dataCalibracao);
+                const hoje = new Date();
+                const diffTime = Math.abs(hoje - dataCalibracao);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const calibracaoVencida = diffDays > 365;
+                
+                fridgeCard.innerHTML = `
+                    <h3>${geladeira.local}</h3>
+                    <p><strong>Tipo:</strong> ${geladeira.tipo}</p>
+                    <p><strong>Marca:</strong> ${geladeira.marca}</p>
+                    <p><strong>Código Dasa:</strong> ${geladeira.codigoDasa}</p>
+                    <p><strong>Código Termômetro:</strong> ${geladeira.codigoTermometro}</p>
+                    <p><strong>Última Calibração:</strong> ${new Date(geladeira.dataCalibracao).toLocaleDateString('pt-BR')}</p>
+                    ${calibracaoVencida ? '<div class="calibration-warning">ATENÇÃO: Calibração vencida!</div>' : ''}
+                    
+                    <div class="qr-code">
+                        <p><strong>QR Code de Identificação</strong></p>
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="btn btn-primary view-btn" data-id="${geladeira.id}">Ver Perfil</button>
+                        ${usuarioLogado.nivel === 1 ? `
+                            <button class="btn btn-warning edit-btn" data-id="${geladeira.id}">Editar</button>
+                            <button class="btn btn-danger delete-btn" data-id="${geladeira.id}">Excluir</button>
+                        ` : ''}
+                    </div>
+                `;
+                
+                fridgeList.appendChild(fridgeCard);
+                
+                // Gerar QR Code após o elemento ser adicionado ao DOM
+                const qrContainer = fridgeCard.querySelector('.qr-code');
+                generateQRCode(fridgeUrl, qrContainer);
+                
+                // Adicionar event listeners aos botões
+                fridgeCard.querySelector('.view-btn').addEventListener('click', function() {
+                    openFridgeProfile(geladeira.id);
+                });
+                
+                if (usuarioLogado.nivel === 1) {
+                    fridgeCard.querySelector('.edit-btn').addEventListener('click', function() {
+                        editFridge(geladeira.id);
+                    });
+                    
+                    fridgeCard.querySelector('.delete-btn').addEventListener('click', function() {
+                        deleteFridge(geladeira.id);
+                    });
+                }
+            });
+        }
+
+        // Abrir perfil da geladeira
+        function openFridgeProfile(fridgeId) {
+            geladeiraAtual = geladeiras.find(g => g.id === fridgeId);
+            
+            if (!geladeiraAtual) {
+                alert('Geladeira não encontrada.');
+                return;
+            }
+            
+            // Verificar se a calibração está vencida
+            const dataCalibracao = new Date(geladeiraAtual.dataCalibracao);
+            const hoje = new Date();
+            const diffTime = Math.abs(hoje - dataCalibracao);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const calibracaoVencida = diffDays > 365;
+            
+            // Atualizar título
+            profileTitle.textContent = `Perfil da Geladeira - ${geladeiraAtual.local}`;
+            
+            // Atualizar informações do perfil
+            profileInfo.innerHTML = `
+                <div class="info-item">
+                    <strong>Local:</strong> ${geladeiraAtual.local}
+                </div>
+                <div class="info-item">
+                    <strong>Tipo:</strong> ${geladeiraAtual.tipo}
+                </div>
+                <div class="info-item">
+                    <strong>Marca:</strong> ${geladeiraAtual.marca}
+                </div>
+                <div class="info-item">
+                    <strong>Código Dasa:</strong> ${geladeiraAtual.codigoDasa}
+                </div>
+                <div class="info-item">
+                    <strong>Código Termômetro:</strong> ${geladeiraAtual.codigoTermometro}
+                </div>
+                <div class="info-item">
+                    <strong>Última Calibração:</strong> ${new Date(geladeiraAtual.dataCalibracao).toLocaleDateString('pt-BR')}
+                </div>
+                <div class="info-item">
+                    <strong>Data de Cadastro:</strong> ${new Date(geladeiraAtual.dataCadastro).toLocaleDateString('pt-BR')}
+                </div>
+                ${calibracaoVencida ? '<div class="calibration-warning">ATENÇÃO: Calibração vencida! É necessário realizar nova calibração do termômetro.</div>' : ''}
+            `;
+            
+            // Atualizar URL sem recarregar a página
+            const newUrl = `${window.location.origin}${window.location.pathname}?id=${fridgeId}`;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+            
+            // Mostrar tela de perfil
+            mainScreen.classList.add('hidden');
+            profileScreen.classList.remove('hidden');
+            
+            // Renderizar histórico de temperaturas
+            renderTemperatureHistory();
+            
+            // Inicializar gráfico
+            initTemperatureChart();
+            
+            // Gerar QR Code do perfil
+            generateProfileQrCode();
+        }
+
+        // Voltar para a tela principal
+        function goBackToMain() {
+            // Atualizar URL para remover o parâmetro ID
+            const newUrl = `${window.location.origin}${window.location.pathname}`;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+            
+            // Mostrar tela principal
+            profileScreen.classList.add('hidden');
+            mainScreen.classList.remove('hidden');
+            
+            // Limpar dados da geladeira atual
+            geladeiraAtual = null;
+            
+            // Destruir gráfico se existir
+            if (temperatureChart) {
+                temperatureChart.destroy();
+                temperatureChart = null;
+            }
+        }
+
+        // Manipular pesquisa
+        function handleSearch() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            
+            if (searchTerm === '') {
+                renderFridgeList();
+                return;
+            }
+            
+            const filtered = geladeiras.filter(g => 
+                g.codigoDasa.toLowerCase().includes(searchTerm)
+            );
+            
+            renderFridgeList(filtered);
+        }
+
+        // Editar geladeira
+        function editFridge(fridgeId) {
+            const geladeira = geladeiras.find(g => g.id === fridgeId);
+            
+            if (!geladeira) {
+                alert('Geladeira não encontrada.');
+                return;
+            }
+            
+            // Criar formulário de edição
+            const fridgeCard = document.querySelector(`.fridge-card [data-id="${fridgeId}"]`).closest('.fridge-card');
+            let editForm = fridgeCard.querySelector('.edit-form');
+            
+            if (!editForm) {
+                editForm = document.createElement('div');
+                editForm.className = 'edit-form';
+                editForm.innerHTML = `
+                    <h4>Editar Geladeira</h4>
+                    <form class="edit-fridge-form">
+                        <div class="form-group">
+                            <label>Local do Equipamento</label>
+                            <input type="text" class="edit-local" value="${geladeira.local}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Equipamento</label>
+                            <select class="edit-tipo" required>
+                                <option value="Geladeira" ${geladeira.tipo === 'Geladeira' ? 'selected' : ''}>Geladeira</option>
+                                <option value="Freezer" ${geladeira.tipo === 'Freezer' ? 'selected' : ''}>Freezer</option>
+                                <option value="Câmara Frigorífica" ${geladeira.tipo === 'Câmara Frigorífica' ? 'selected' : ''}>Câmara Frigorífica</option>
+                                <option value="Outro" ${geladeira.tipo === 'Outro' ? 'selected' : ''}>Outro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Marca do Equipamento</label>
+                            <input type="text" class="edit-marca" value="${geladeira.marca}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Código do Termômetro</label>
+                            <input type="text" class="edit-termometro" value="${geladeira.codigoTermometro}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data de Calibração</label>
+                            <input type="date" class="edit-calibracao" value="${geladeira.dataCalibracao}" required>
+                        </div>
+                        <div class="actions">
+                            <button type="submit" class="btn btn-success">Salvar</button>
+                            <button type="button" class="btn btn-light cancel-edit">Cancelar</button>
+                        </div>
+                    </form>
+                `;
+                
+                fridgeCard.appendChild(editForm);
+                
+                // Event listeners para o formulário de edição
+                editForm.querySelector('.edit-fridge-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveFridgeEdit(fridgeId);
+                });
+                
+                editForm.querySelector('.cancel-edit').addEventListener('click', function() {
+                    editForm.remove();
+                });
+            }
+        }
+
+        // Salvar edição da geladeira
+        function saveFridgeEdit(fridgeId) {
+            const geladeira = geladeiras.find(g => g.id === fridgeId);
+            const fridgeCard = document.querySelector(`.fridge-card [data-id="${fridgeId}"]`).closest('.fridge-card');
+            const editForm = fridgeCard.querySelector('.edit-form');
+            
+            const local = editForm.querySelector('.edit-local').value;
+            const tipo = editForm.querySelector('.edit-tipo').value;
+            const marca = editForm.querySelector('.edit-marca').value;
+            const codigoTermometro = editForm.querySelector('.edit-termometro').value;
+            const dataCalibracao = editForm.querySelector('.edit-calibracao').value;
+            
+            // Atualizar geladeira
+            geladeira.local = local;
+            geladeira.tipo = tipo;
+            geladeira.marca = marca;
+            geladeira.codigoTermometro = codigoTermometro;
+            geladeira.dataCalibracao = dataCalibracao;
+            
+            // Salvar alterações
+            localStorage.setItem('geladeiras', JSON.stringify(geladeiras));
+            
+            // Remover formulário de edição
+            editForm.remove();
+            
+            // Atualizar lista
+            renderFridgeList();
+            
+            alert('Geladeira atualizada com sucesso!');
+        }
+
+        // Excluir geladeira
+        function deleteFridge(fridgeId) {
+            if (confirm('Tem certeza que deseja excluir esta geladeira?')) {
+                geladeiras = geladeiras.filter(g => g.id !== fridgeId);
+                
+                // Salvar alterações
+                localStorage.setItem('geladeiras', JSON.stringify(geladeiras));
+                
+                // Atualizar lista
+                renderFridgeList();
+                
+                alert('Geladeira excluída com sucesso.');
+            }
+        }
+
+        // Validar temperatura
+        function validateTemperature() {
+            const tempMin = parseFloat(tempMinInput.value);
+            const tempAtual = parseFloat(tempAtualInput.value);
+            const tempMax = parseFloat(tempMaxInput.value);
+            
+            let errorMessage = '';
+            
+            // Verificar se todos os campos estão preenchidos
+            if (isNaN(tempMin) || isNaN(tempAtual) || isNaN(tempMax)) {
+                temperatureError.classList.add('hidden');
+                temperatureStatus.classList.add('hidden');
+                return true;
+            }
+            
+            // Verificar se a temperatura máxima é menor que a mínima
+            if (tempMax < tempMin) {
+                errorMessage = 'A temperatura máxima não pode ser menor que a temperatura mínima.';
+            }
+            // Verificar se a temperatura atual está fora dos limites
+            else if (tempAtual < tempMin) {
+                errorMessage = 'A temperatura atual não pode ser menor que a temperatura mínima.';
+            }
+            else if (tempAtual > tempMax) {
+                errorMessage = 'A temperatura atual não pode ser maior que a temperatura máxima.';
+            }
+            
+            // Atualizar mensagem de erro
+            if (errorMessage) {
+                temperatureError.textContent = errorMessage;
+                temperatureError.classList.remove('hidden');
+                temperatureStatus.classList.add('hidden');
+                return false;
+            } else {
+                temperatureError.classList.add('hidden');
+                
+                // Atualizar status da temperatura
+                if (tempAtual >= tempMin && tempAtual <= tempMax) {
+                    temperatureStatus.textContent = 'Temperatura dentro dos limites normais.';
+                    temperatureStatus.className = 'temperature-status status-normal';
+                    temperatureStatus.classList.remove('hidden');
+                } else {
+                    temperatureStatus.textContent = 'ATENÇÃO: Temperatura fora dos limites normais!';
+                    temperatureStatus.className = 'temperature-status status-alert';
+                    temperatureStatus.classList.remove('hidden');
+                }
+                
+                return true;
+            }
+        }
+
+        // Manipular envio de temperatura
+        function handleTemperatureSubmit() {
+            if (!geladeiraAtual) return;
+            
+            const tempMin = parseFloat(tempMinInput.value);
+            const tempAtual = parseFloat(tempAtualInput.value);
+            const tempMax = parseFloat(tempMaxInput.value);
+            const planoAcao = planoAcaoInput.value;
+            
+            // Validar temperatura
+            if (!validateTemperature()) {
+                return;
+            }
+            
+            // Determinar status da temperatura
+            let status = 'Normal';
+            if (tempAtual < tempMin || tempAtual > tempMax) {
+                status = 'Fora dos Limites';
+            }
+            
+            // Criar novo registro de temperatura
+            const novoRegistro = {
+                id: 'temp_' + Math.random().toString(36).substr(2, 9),
+                dataHora: new Date().toISOString(),
+                tempMin,
+                tempAtual,
+                tempMax,
+                status,
+                planoAcao,
+                usuario: usuarioLogado.username,
+                editado: false
+            };
+            
+            // Adicionar à geladeira
+            geladeiraAtual.temperaturas.push(novoRegistro);
+            
+            // Atualizar no localStorage
+            const index = geladeiras.findIndex(g => g.id === geladeiraAtual.id);
+            if (index !== -1) {
+                geladeiras[index] = geladeiraAtual;
+                localStorage.setItem('geladeiras', JSON.stringify(geladeiras));
+            }
+            
+            // Limpar formulário
+            tempMinInput.value = '';
+            tempAtualInput.value = '';
+            tempMaxInput.value = '';
+            planoAcaoInput.value = '';
+            temperatureStatus.classList.add('hidden');
+            
+            // Atualizar histórico e gráfico
+            renderTemperatureHistory();
+            updateTemperatureChart();
+            
+            alert('Temperatura registrada com sucesso!');
+        }
+
+        // Renderizar histórico de temperaturas
+        function renderTemperatureHistory() {
+            if (!geladeiraAtual) return;
+            
+            temperatureTable.innerHTML = '';
+            
+            if (geladeiraAtual.temperaturas.length === 0) {
+                temperatureTable.innerHTML = '<tr><td colspan="8" style="padding: 10px; text-align: center;">Nenhum registro de temperatura encontrado.</td></tr>';
+                return;
+            }
+            
+            // Ordenar por data (mais recente primeiro)
+            const temperaturasOrdenadas = [...geladeiraAtual.temperaturas].sort((a, b) => 
+                new Date(b.dataHora) - new Date(a.dataHora)
+            );
+            
+            temperaturasOrdenadas.forEach(registro => {
+                const dataHora = new Date(registro.dataHora).toLocaleString('pt-BR');
+                
+                const row = document.createElement('tr');
+                
+                // Adicionar classe de alerta se a temperatura estiver fora dos limites
+                if (registro.status === 'Fora dos Limites') {
+                    row.style.backgroundColor = '#f8d7da';
+                }
+                
+                row.innerHTML = `
+                    <td>${dataHora}</td>
+                    <td>${registro.tempMin}°C</td>
+                    <td>${registro.tempAtual}°C</td>
+                    <td>${registro.tempMax}°C</td>
+                    <td>${registro.status}</td>
+                    <td>${registro.planoAcao || '-'}</td>
+                    <td>${registro.usuario}</td>
+                    <td>
+                        ${usuarioLogado.nivel === 1 ? `<button class="btn btn-warning btn-sm edit-temp-btn" data-id="${registro.id}">Editar</button>` : ''}
+                    </td>
+                `;
+                
+                // Adicionar justificativa de edição se houver
+                if (registro.editado && registro.justificativa) {
+                    const justificativaRow = document.createElement('tr');
+                    justificativaRow.innerHTML = `
+                        <td colspan="8" class="edit-justification">
+                            <strong>Edição realizada por ${registro.editadoPor} em ${new Date(registro.dataEdicao).toLocaleString('pt-BR')}:</strong><br>
+                            ${registro.justificativa}
+                        </td>
+                    `;
+                    temperatureTable.appendChild(justificativaRow);
+                }
+                
+                temperatureTable.appendChild(row);
+                
+                // Adicionar event listener para o botão de edição (apenas para administradores)
+                if (usuarioLogado.nivel === 1) {
+                    row.querySelector('.edit-temp-btn').addEventListener('click', function() {
+                        editTemperature(registro.id);
+                    });
+                }
+            });
+        }
+
+        // Editar registro de temperatura
+        function editTemperature(tempId) {
+            const registro = geladeiraAtual.temperaturas.find(t => t.id === tempId);
+            
+            if (!registro) {
+                alert('Registro não encontrado.');
+                return;
+            }
+            
+            // Criar formulário de edição
+            const tempRow = document.querySelector(`.edit-temp-btn[data-id="${tempId}"]`).closest('tr');
+            let editForm = tempRow.querySelector('.edit-form');
+            
+            if (!editForm) {
+                editForm = document.createElement('div');
+                editForm.className = 'edit-form';
+                editForm.innerHTML = `
+                    <h4>Editar Registro de Temperatura</h4>
+                    <form class="edit-temp-form">
+                        <div class="form-group">
+                            <label>Temperatura Mínima (°C)</label>
+                            <input type="number" class="edit-temp-min" value="${registro.tempMin}" min="-40" max="30" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Temperatura Atual (°C)</label>
+                            <input type="number" class="edit-temp-atual" value="${registro.tempAtual}" min="-40" max="30" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Temperatura Máxima (°C)</label>
+                            <input type="number" class="edit-temp-max" value="${registro.tempMax}" min="-40" max="30" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Plano de Ação</label>
+                            <textarea class="edit-plano-acao" rows="3">${registro.planoAcao || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Justificativa da Edição</label>
+                            <textarea class="edit-justificativa" rows="3" required placeholder="Descreva o motivo da edição deste registro"></textarea>
+                        </div>
+                        <div class="actions">
+                            <button type="submit" class="btn btn-success">Salvar Edição</button>
+                            <button type="button" class="btn btn-light cancel-edit-temp">Cancelar</button>
+                        </div>
+                    </form>
+                `;
+                
+                // Inserir após a linha do registro
+                tempRow.parentNode.insertBefore(editForm, tempRow.nextSibling);
+                
+                // Event listeners para o formulário de edição
+                editForm.querySelector('.edit-temp-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveTemperatureEdit(tempId);
+                });
+                
+                editForm.querySelector('.cancel-edit-temp').addEventListener('click', function() {
+                    editForm.remove();
+                });
+            }
+        }
+
+        // Salvar edição de temperatura
+        function saveTemperatureEdit(tempId) {
+            const registro = geladeiraAtual.temperaturas.find(t => t.id === tempId);
+            const editForm = document.querySelector(`.edit-temp-btn[data-id="${tempId}"]`).closest('tr').nextSibling;
+            
+            const tempMin = parseFloat(editForm.querySelector('.edit-temp-min').value);
+            const tempAtual = parseFloat(editForm.querySelector('.edit-temp-atual').value);
+            const tempMax = parseFloat(editForm.querySelector('.edit-temp-max').value);
+            const planoAcao = editForm.querySelector('.edit-plano-acao').value;
+            const justificativa = editForm.querySelector('.edit-justificativa').value;
+            
+            // Validar temperatura
+            if (tempMax < tempMin) {
+                alert('A temperatura máxima não pode ser menor que a temperatura mínima.');
+                return;
+            }
+            if (tempAtual < tempMin) {
+                alert('A temperatura atual não pode ser menor que a temperatura mínima.');
+                return;
+            }
+            if (tempAtual > tempMax) {
+                alert('A temperatura atual não pode ser maior que a temperatura máxima.');
+                return;
+            }
+            
+            // Determinar status da temperatura
+            let status = 'Normal';
+            if (tempAtual < tempMin || tempAtual > tempMax) {
+                status = 'Fora dos Limites';
+            }
+            
+            // Atualizar registro
+            registro.tempMin = tempMin;
+            registro.tempAtual = tempAtual;
+            registro.tempMax = tempMax;
+            registro.status = status;
+            registro.planoAcao = planoAcao;
+            registro.editado = true;
+            registro.editadoPor = usuarioLogado.username;
+            registro.dataEdicao = new Date().toISOString();
+            registro.justificativa = justificativa;
+            
+            // Salvar alterações
+            localStorage.setItem('geladeiras', JSON.stringify(geladeiras));
+            
+            // Remover formulário de edição
+            editForm.remove();
+            
+            // Atualizar histórico e gráfico
+            renderTemperatureHistory();
+            updateTemperatureChart();
+            
+            alert('Registro de temperatura atualizado com sucesso!');
+        }
+
+        // Inicializar gráfico de temperatura
+        function initTemperatureChart() {
+            if (!geladeiraAtual) return;
+            
+            const ctx = temperatureChartCanvas.getContext('2d');
+            
+            // Preparar dados
+            const labels = geladeiraAtual.temperaturas.map((t, i) => `Registro ${i+1}`);
+            const minTemps = geladeiraAtual.temperaturas.map(t => t.tempMin);
+            const atualTemps = geladeiraAtual.temperaturas.map(t => t.tempAtual);
+            const maxTemps = geladeiraAtual.temperaturas.map(t => t.tempMax);
+            
+            temperatureChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Temperatura Mínima',
+                            data: minTemps,
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Temperatura Atual',
+                            data: atualTemps,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Temperatura Máxima',
+                            data: maxTemps,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            tension: 0.1,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {                            
+                            title: {
+                                display: true,
+                                text: 'Temperatura (°C)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Registros'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Atualizar gráfico de temperatura
+        function updateTemperatureChart() {
+            if (!temperatureChart || !geladeiraAtual) return;
+            
+            const labels = geladeiraAtual.temperaturas.map((t, i) => `Registro ${i+1}`);
+            const minTemps = geladeiraAtual.temperaturas.map(t => t.tempMin);
+            const atualTemps = geladeiraAtual.temperaturas.map(t => t.tempAtual);
+            const maxTemps = geladeiraAtual.temperaturas.map(t => t.tempMax);
+            
+            temperatureChart.data.labels = labels;
+            temperatureChart.data.datasets[0].data = minTemps;
+            temperatureChart.data.datasets[1].data = atualTemps;
+            temperatureChart.data.datasets[2].data = maxTemps;
+            
+            temperatureChart.update();
+        }
+    </script>
+</body>
+</html>
