@@ -586,7 +586,7 @@
     <!-- Sistema Principal -->
     <div id="main-system" class="hidden">
         <header>
-            <a href="https://courageous-faun-868e5c.netlify.app/"><img id="LogoDasa" src="LogoDasa.png" alt="" width="11%" height="11%"></a>            
+            <img id="LogoDasa" src="LogoDasa.png" alt="" width="11%" height="11%">
             <h1>Sistema de Monitoramento de Temperaturas</h1>
             <div class="header-info">
                 <div class="user-info" id="user-info">
@@ -677,6 +677,7 @@
                                     <option value="Freezer">Freezer</option>
                                     <option value="Temperatura Ambiente">Temperatura Ambiente</option>
                                     <option value="Câmara Frigorífica">Câmara Frigorífica</option>
+                                    <option value="Caixa do Armazém">Caixa do Armazém</option>
                                     <option value="Outro">Outro</option>
                                 </select>
                             </div>
@@ -1575,6 +1576,8 @@
                                 <option value="Geladeira" ${geladeira.tipo === 'Geladeira' ? 'selected' : ''}>Geladeira</option>
 
                                 <option value="Temperatura Ambiente" ${geladeira.tipo === 'Temperatura Ambiente' ? 'selected' : ''}>Temperatura Ambiente</option>
+
+                                <option value="Caixa do Armazém" ${geladeira.tipo === 'Caixa do Armazém' ? 'selected' : ''}>Caixa do Armazém</option>
 
                                 <option value="Freezer" ${geladeira.tipo === 'Freezer' ? 'selected' : ''}>Freezer</option>
                                 <option value="Câmara Frigorífica" ${geladeira.tipo === 'Câmara Frigorífica' ? 'selected' : ''}>Câmara Frigorífica</option>
