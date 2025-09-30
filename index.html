@@ -662,7 +662,7 @@
                 
                 <div id="fridge-management">
                     <div class="card" id="fridge-form-card">
-                        <h2>Cadastrar Nova Geladeira</h2>
+                        <h2>Cadastrar Novo Equipamento</h2>
                         <form id="fridge-form">
                             <div class="form-group">
                                 <label for="local">Local do Equipamento</label>
@@ -675,6 +675,7 @@
                                     <option value="">Selecione o tipo</option>
                                     <option value="Geladeira">Geladeira</option>
                                     <option value="Freezer">Freezer</option>
+                                    <option value="Temperatura Ambiente">Temperatura Ambiente</option>
                                     <option value="Câmara Frigorífica">Câmara Frigorífica</option>
                                     <option value="Outro">Outro</option>
                                 </select>
@@ -696,16 +697,16 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="data-calibracao">Data de Última Calibração</label>
+                                <label for="data-calibracao">Data de Última Calibração do Termômetro</label>
                                 <input type="date" id="data-calibracao" required>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">Cadastrar Geladeira</button>
+                            <button type="submit" class="btn btn-primary">Cadastrar Equipamento</button>
                         </form>
                     </div>
                     
                     <div class="card">
-                        <h2>Geladeiras Cadastradas</h2>
+                        <h2>Equipamentos Cadastrados</h2>
                         
                         <div class="search-box">
                             <input type="text" id="search-input" placeholder="Pesquisar por Código Dasa...">
@@ -1407,7 +1408,7 @@
                     <p><strong>Marca:</strong> ${geladeira.marca}</p>
                     <p><strong>Código Dasa:</strong> ${geladeira.codigoDasa}</p>
                     <p><strong>Código Termômetro:</strong> ${geladeira.codigoTermometro}</p>
-                    <p><strong>Última Calibração:</strong> ${new Date(geladeira.dataCalibracao).toLocaleDateString('pt-BR')}</p>
+                    <p><strong>Última Calibração do Termômetro:</strong> ${new Date(geladeira.dataCalibracao).toLocaleDateString('pt-BR')}</p>
                     ${calibracaoVencida ? '<div class="calibration-warning">ATENÇÃO: Calibração vencida!</div>' : ''}
                     
                     <div class="qr-code">
@@ -1483,7 +1484,7 @@
                     <strong>Código Termômetro:</strong> ${geladeiraAtual.codigoTermometro}
                 </div>
                 <div class="info-item">
-                    <strong>Última Calibração:</strong> ${new Date(geladeiraAtual.dataCalibracao).toLocaleDateString('pt-BR')}
+                    <strong>Última Calibração do Termômetro:</strong> ${new Date(geladeiraAtual.dataCalibracao).toLocaleDateString('pt-BR')}
                 </div>
                 <div class="info-item">
                     <strong>Data de Cadastro:</strong> ${new Date(geladeiraAtual.dataCadastro).toLocaleDateString('pt-BR')}
@@ -1572,6 +1573,9 @@
                             <label>Tipo de Equipamento</label>
                             <select class="edit-tipo" required>
                                 <option value="Geladeira" ${geladeira.tipo === 'Geladeira' ? 'selected' : ''}>Geladeira</option>
+
+                                <option value="Temperatura Ambiente" ${geladeira.tipo === 'Temperatura Ambiente' ? 'selected' : ''}>Temperatura Ambiente</option>
+
                                 <option value="Freezer" ${geladeira.tipo === 'Freezer' ? 'selected' : ''}>Freezer</option>
                                 <option value="Câmara Frigorífica" ${geladeira.tipo === 'Câmara Frigorífica' ? 'selected' : ''}>Câmara Frigorífica</option>
                                 <option value="Outro" ${geladeira.tipo === 'Outro' ? 'selected' : ''}>Outro</option>
@@ -1586,7 +1590,7 @@
                             <input type="text" class="edit-termometro" value="${geladeira.codigoTermometro}" required>
                         </div>
                         <div class="form-group">
-                            <label>Data de Calibração</label>
+                            <label>Data de Calibração do Termômetro</label>
                             <input type="date" class="edit-calibracao" value="${geladeira.dataCalibracao}" required>
                         </div>
                         <div class="actions">
